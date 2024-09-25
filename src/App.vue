@@ -1,12 +1,20 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import axios from 'axios'
 
 import Header from './components/Header.vue'
 import CardList from './components/CardList.vue'
 // import Drawer from './components/Drawer.vue'
 
-const items = ref([])
+const items = ref([]) // { value: [] }
+
+const sortBy = ref('')
+const searchQuery = ref('')
+
+const onChangeSelect = (event) => {
+  // console.log(event.target.value);
+  sortBy.value = event.target.value
+}
 
 onMounted(async () => {
   // fetch('http://localhost:8000').then(res => res.json()).then(data => {
@@ -15,8 +23,17 @@ onMounted(async () => {
   // axios.get('http://localhost:8000').then(resp=>console.log(resp.data));
 
   try {
-    const { data } = await axios.get('http://localhost:8000')
-    // console.log(data)
+    const { data } = await axios.get('http://localhost:8000/items')
+
+    items.value = data
+  } catch (error) {
+    console.log(error)
+  }
+})
+
+watch(sortBy, async () => {
+  try {
+    const { data } = await axios.get('http://localhost:8000/items?sortBy=' + sortBy.value)
     items.value = data
   } catch (error) {
     console.log(error)
@@ -34,10 +51,16 @@ onMounted(async () => {
         <h2 class="text-3xl font-bold mb-8">All items</h2>
 
         <div class="flex gap-4">
-          <select class="py-2 px-3 border rounded-md outline-none" name="" id="">
-            <option value="">By name</option>
-            <option value="">By Price(low to high)</option>
-            <option value="">By Price(high to low)</option>
+          <select
+            @change="onChangeSelect"
+            class="py-2 px-3 border rounded-md outline-none"
+            name=""
+            id=""
+          >
+            <option selected>Select sort option</option>
+            <option value="name">By name</option>
+            <option value="price">By Price(low to high)</option>
+            <option value="-price">By Price(high to low)</option>
           </select>
 
           <div class="relative">
