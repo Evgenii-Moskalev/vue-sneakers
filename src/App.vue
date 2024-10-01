@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
 import axios from 'axios'
 
 import Header from './components/Header.vue'
@@ -8,37 +8,42 @@ import CardList from './components/CardList.vue'
 
 const items = ref([]) // { value: [] }
 
-const sortBy = ref('')
-const searchQuery = ref('')
+const filters = reactive({
+  sortBy: 'title',
+  searchQuery: ''
+})
 
 const onChangeSelect = (event) => {
   // console.log(event.target.value);
-  sortBy.value = event.target.value
+  filters.sortBy = event.target.value
 }
 
-onMounted(async () => {
-  // fetch('http://localhost:8000').then(res => res.json()).then(data => {
-  //   console.log(data);
-  // })
-  // axios.get('http://localhost:8000').then(resp=>console.log(resp.data));
+const onChangeSearchInput = (event) => {
+  filters.searchQuery = event.target.value
+}
 
+const fetchItems = async () => {
   try {
-    const { data } = await axios.get('http://localhost:8000/items')
+    const params = {
+      sortBy: filters.sortBy,
+      // searchQuery: filters.searchQuery
+    }
+    if (filters.searchQuery) {
+      params.title = `${filters.searchQuery}`
+    }
+
+    const { data } = await axios.get('http://localhost:8000/items', {
+      params
+    })
 
     items.value = data
   } catch (error) {
     console.log(error)
   }
-})
+}
 
-watch(sortBy, async () => {
-  try {
-    const { data } = await axios.get('http://localhost:8000/items?sortBy=' + sortBy.value)
-    items.value = data
-  } catch (error) {
-    console.log(error)
-  }
-})
+onMounted(fetchItems)
+watch(filters, fetchItems)
 </script>
 
 <template>
@@ -66,6 +71,7 @@ watch(sortBy, async () => {
           <div class="relative">
             <img class="absolute left-4 top-3" src="/search.svg" alt="Search" />
             <input
+              @input="onChangeSearchInput"
               class="border rounded-md py-2 pl-11 pr-4 outline-none focus:border-gray-400"
               type="text"
               placeholder="Search..."
