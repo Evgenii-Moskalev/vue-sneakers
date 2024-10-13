@@ -1,5 +1,11 @@
 <script setup>
-import { onMounted, provide, reactive, ref, watch } from 'vue'
+import {
+  onMounted,
+  // provide,
+  reactive,
+  ref,
+  watch
+} from 'vue'
 import axios from 'axios'
 
 import Header from './components/Header.vue'
@@ -39,18 +45,13 @@ const fetchFavorites = async () => {
         favoriteId: favorite.id
       }
     })
-    
   } catch (error) {
     console.log(error)
   }
 }
 
-const addToFavorite = async(item) => {
-
+const addToFavorite = async (item) => {
   item.isFavorite = !item.isFavorite
-
-  console.log(item);
-  
 }
 
 const fetchItems = async () => {
@@ -83,7 +84,7 @@ onMounted(async () => {
 })
 watch(filters, fetchItems)
 
-provide('addToFavorite', addToFavorite)
+// provide('addToFavorite', addToFavorite)
 </script>
 
 <template>
@@ -121,7 +122,7 @@ provide('addToFavorite', addToFavorite)
       </div>
 
       <div class="mt-10">
-        <CardList :items="items" @addToFavorite="addToFavorite"/>
+        <CardList :items="items" @addToFavorite="addToFavorite" />
       </div>
     </div>
   </div>

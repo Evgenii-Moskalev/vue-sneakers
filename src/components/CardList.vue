@@ -1,16 +1,14 @@
 <script setup>
 import Card from './Card.vue'
-import { inject } from 'vue'; 
+// import { inject } from 'vue'; 
 
 defineProps({
   items: Array
 })
 
-const onClickAdd = () => {
-  alert('Add')
-}
+const emit = defineEmits(['addToFavorite']);
 
-const addToFavorite = inject('addToFavorite')
+// const addToFavorite = inject('addToFavorite')
 
 </script>
 <template>
@@ -22,8 +20,7 @@ const addToFavorite = inject('addToFavorite')
       :title="item.title"
       :imageUrl="item.imageUrl"
       :price="item.price"
-      :onClickAdd="onClickAdd"
-      :onClickFavorite="() => addToFavorite(item)"
+      :onClickFavorite="() => emit('addToFavorite', item)"
       :is-favorite="item.isFavorite"
     />
   </div>
