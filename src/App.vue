@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, reactive, ref, watch } from 'vue'
+import { onMounted, provide, reactive, ref, watch } from 'vue'
 import axios from 'axios'
 
 import Header from './components/Header.vue'
@@ -22,10 +22,41 @@ const onChangeSearchInput = (event) => {
   filters.searchQuery = event.target.value
 }
 
+const fetchFavorites = async () => {
+  try {
+    const { data: favorites } = await axios.get(`http://localhost:8000/favorites`)
+
+    items.value = items.value.map((item) => {
+      const favorite = favorites.find((favorite) => favorite.parentId === item.id)
+
+      if (!favorite) {
+        return item
+      }
+
+      return {
+        ...item,
+        isFavorite: true,
+        favoriteId: favorite.id
+      }
+    })
+    
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const addToFavorite = async(item) => {
+
+  item.isFavorite = !item.isFavorite
+
+  console.log(item);
+  
+}
+
 const fetchItems = async () => {
   try {
     const params = {
-      sortBy: filters.sortBy,
+      sortBy: filters.sortBy
       // searchQuery: filters.searchQuery
     }
     if (filters.searchQuery) {
@@ -36,14 +67,23 @@ const fetchItems = async () => {
       params
     })
 
-    items.value = data
+    items.value = data.map((obj) => ({
+      ...obj,
+      isFavorite: false,
+      isAdded: false
+    }))
   } catch (error) {
     console.log(error)
   }
 }
 
-onMounted(fetchItems)
+onMounted(async () => {
+  await fetchItems()
+  await fetchFavorites()
+})
 watch(filters, fetchItems)
+
+provide('addToFavorite', addToFavorite)
 </script>
 
 <template>
@@ -81,7 +121,7 @@ watch(filters, fetchItems)
       </div>
 
       <div class="mt-10">
-        <CardList :items="items" />
+        <CardList :items="items" @addToFavorite="addToFavorite"/>
       </div>
     </div>
   </div>
