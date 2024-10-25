@@ -51,7 +51,28 @@ const fetchFavorites = async () => {
 }
 
 const addToFavorite = async (item) => {
-  item.isFavorite = !item.isFavorite
+  // item.isFavorite = !item.isFavorite
+  try {
+    if (!item.isFavorite) {
+      const obj = {
+        parentId: item.id
+      }
+
+      const { data } = await axios.post(`http://localhost:8000/favorites`, obj)
+
+      item.isFavorite = true
+
+      item.favoriteId = data.id
+      
+      // console.log(item)
+    } else {
+      await axios.delete(`http://localhost:8000/favorites/${item.favoriteId}`)
+      item.isFavorite = false
+      item.favoriteId = null
+    }
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 const fetchItems = async () => {
@@ -71,6 +92,7 @@ const fetchItems = async () => {
     items.value = data.map((obj) => ({
       ...obj,
       isFavorite: false,
+      favoriteId: null,
       isAdded: false
     }))
   } catch (error) {
@@ -83,6 +105,7 @@ onMounted(async () => {
   await fetchFavorites()
 })
 watch(filters, fetchItems)
+watch(filters, fetchFavorites)
 
 // provide('addToFavorite', addToFavorite)
 </script>
